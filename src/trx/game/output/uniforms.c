@@ -38,7 +38,8 @@
     X_DECLARE_MEMBER(int, vertex_snap_enabled)                                 \
     X_DECLARE_MEMBER(int, software_renderer_enabled)                           \
     X_DECLARE_MEMBER(int, tr_version)                                          \
-    X_DECLARE_MEMBER(float, uv_scroll_tick)
+    X_DECLARE_MEMBER(float, uv_scroll_tick)                                    \
+    X_DECLARE_MEMBER(int, _pad, [3])
 
 #pragma pack(push, 4)
 typedef struct {
