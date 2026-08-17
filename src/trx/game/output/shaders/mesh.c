@@ -95,6 +95,22 @@ RESULT Output_MeshShader_Create(OUTPUT_MESH_SHADER **const out_shader)
                 shader->base[i], "uTexEnvMap", &loc)) {
             TRX_GL_TRACK_UNIFORM(glUniform1i, loc, 1);
         }
+        if (Output_Shader_TryLookupUniform(
+                shader->base[i], "uSoftwareTexAtlas", &loc)) {
+            TRX_GL_TRACK_UNIFORM(glUniform1i, loc, 2);
+        }
+        if (Output_Shader_TryLookupUniform(
+                shader->base[i], "uSoftwarePalette", &loc)) {
+            TRX_GL_TRACK_UNIFORM(glUniform1i, loc, 3);
+        }
+        if (Output_Shader_TryLookupUniform(
+                shader->base[i], "uSoftwareLightMap", &loc)) {
+            TRX_GL_TRACK_UNIFORM(glUniform1i, loc, 4);
+        }
+        if (Output_Shader_TryLookupUniform(
+                shader->base[i], "uSoftwarePaletteLUT", &loc)) {
+            TRX_GL_TRACK_UNIFORM(glUniform1i, loc, 5);
+        }
     }
     *out_shader = shader;
     return OK;

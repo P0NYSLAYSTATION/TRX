@@ -213,10 +213,10 @@ void Level_Finalize_LoadTexturePages(LEVEL_CONTEXT *const ctx)
     const LEVEL_FORMAT_LOADER *const loader = ctx->loader;
     LEVEL_CONTEXT_INFO *const info = &ctx->info;
     const int32_t num_pages = info->textures.page_count;
-    Output_InitialiseTexturePages(num_pages, loader->game_version >= 2);
+    Output_InitialiseTexturePages(num_pages, loader->game_version <= 3);
 
     for (int32_t i = 0; i < num_pages; i++) {
-        if (loader->game_version >= 2) {
+        if (loader->game_version <= 3) {
             uint8_t *const target_8 = Output_GetTexturePage8(i);
             const uint8_t *const source_8 =
                 &info->textures.pages_8[i * TEXTURE_PAGE_SIZE];

@@ -28,6 +28,9 @@ flat out vec4 gAtlasSize;
 out vec2 gTrapezoidRatios;
 out float gShade;
 out vec4 gColor;
+#if TR_VERSION <= 2
+out vec4 gBaseColor;
+#endif
 out vec3 gAdd;
 flat out float gReflectivity;
 
@@ -123,6 +126,9 @@ void main(void) {
     LightingResult lr =
         light(inShade, gFlags, inNormal.xyz, lightWorldPos, inNormal.w);
     gShade = lr.shade;
+#if TR_VERSION <= 2
+    gBaseColor = inColor;
+#endif
 
     float gamma_exp = 1.0 / ((uGamma / 10.0) * 4.0);
 
@@ -227,6 +233,13 @@ uniform sampler2D uTexEnvMap;
 uniform vec4 uTint;
 uniform bool uDiscardAlpha;
 
+#if TR_VERSION <= 3
+uniform usampler2DArray uSoftwareTexAtlas;
+uniform sampler2D uSoftwarePalette;
+uniform usampler2D uSoftwareLightMap;
+uniform usampler3D uSoftwarePaletteLUT;
+#endif
+
 #if TR_VERSION >= 4
 // TR4 reflections sample the env map out of the atlas, from the sprite the OG
 // uses for it. uEnvMapLayer is < 0 when the level has no such sprite.
@@ -243,6 +256,9 @@ in vec2 gTexUV;
 flat in vec4 gAtlasSize;
 in float gShade;
 in vec4 gColor;
+#if TR_VERSION <= 2
+in vec4 gBaseColor;
+#endif
 in vec3 gAdd;
 in vec2 gTrapezoidRatios;
 flat in float gReflectivity;
@@ -327,6 +343,68 @@ vec4 applyFogBulbs(vec4 color)
     return color;
 }
 
+#if TR_VERSION <= 3
+int softwarePaletteIndex(vec3 color)
+{
+    const float lutMax = 63.0;
+    ivec3 pos = ivec3(round(clamp(color, 0.0, 1.0) * lutMax));
+    return int(texelFetch(uSoftwarePaletteLUT, pos, 0).r);
+}
+
+vec3 softwarePaletteColor(vec3 color)
+{
+    int paletteIndex = softwarePaletteIndex(color);
+    return texelFetch(uSoftwarePalette, ivec2(paletteIndex, 0), 0).rgb;
+}
+
+vec4 softwareTextureColor(vec3 texCoords)
+{
+    ivec3 atlasSize = textureSize(uSoftwareTexAtlas, 0);
+    ivec2 texel = ivec2(floor(texCoords.xy * vec2(atlasSize.xy)));
+    texel = clamp(texel, ivec2(0), atlasSize.xy - ivec2(1));
+
+    int sourceIndex =
+        int(texelFetch(uSoftwareTexAtlas, ivec3(texel, gTexLayer), 0).r);
+    if (sourceIndex == 0) {
+        discard;
+    }
+
+#if TR_VERSION <= 2
+    float shade = (uLightingEnabled != 0
+                   && (gFlags & VERT_NO_LIGHTING) == 0u)
+        ? max(gShade, uMinShade)
+        : float(SHADE_NEUTRAL);
+    int shadeIndex = clamp(int(floor(shade / 256.0)), 0, 31);
+    int colorIndex = int(
+        texelFetch(uSoftwareLightMap, ivec2(sourceIndex, shadeIndex), 0).r);
+    vec3 color =
+        texelFetch(uSoftwarePalette, ivec2(colorIndex, 0), 0).rgb;
+    return vec4(color * gColor.a, gColor.a);
+#else
+    vec3 color =
+        texelFetch(uSoftwarePalette, ivec2(sourceIndex, 0), 0).rgb;
+    return vec4(color * gColor.rgb, gColor.a);
+#endif
+}
+
+#if TR_VERSION <= 2
+vec4 softwareFlatColor()
+{
+    int sourceIndex = softwarePaletteIndex(gBaseColor.rgb);
+    float shade = (uLightingEnabled != 0
+                   && (gFlags & VERT_NO_LIGHTING) == 0u)
+        ? max(gShade, uMinShade)
+        : float(SHADE_NEUTRAL);
+    int shadeIndex = clamp(int(floor(shade / 256.0)), 0, 31);
+    int colorIndex = int(
+        texelFetch(uSoftwareLightMap, ivec2(sourceIndex, shadeIndex), 0).r);
+    vec3 color =
+        texelFetch(uSoftwarePalette, ivec2(colorIndex, 0), 0).rgb;
+    return vec4(color * gColor.a, gColor.a);
+}
+#endif
+#endif
+
 void main(void) {
     vec4 texColor = gColor;
 
@@ -337,9 +415,23 @@ void main(void) {
             texCoords.xy /= gTrapezoidRatios;
         }
         texCoords.xy = clampTexAtlas(texCoords.xy, gAtlasSize);
-        texColor *= texture(uTexAtlas, texCoords);
+#if TR_VERSION <= 3
+        if (uSoftwareRendererEnabled != 0) {
+            texColor = softwareTextureColor(texCoords);
+        } else
+#endif
+        {
+            texColor *= texture(uTexAtlas, texCoords);
+        }
     } else {
-        texColor.rgb *= texColor.a;
+#if TR_VERSION <= 2
+        if (uSoftwareRendererEnabled != 0) {
+            texColor = softwareFlatColor();
+        } else
+#endif
+        {
+            texColor.rgb *= texColor.a;
+        }
     }
 
     // Overbright lighting excess, added after texturing (OG specular).
@@ -392,6 +484,13 @@ void main(void) {
     // by the alpha it is premultiplied against.
     texColor *= uTint;
     texColor.rgb *= uTint.a;
+
+#if TR_VERSION <= 3
+    if (uSoftwareRendererEnabled != 0 && texColor.a > 0.0) {
+        texColor.rgb =
+            softwarePaletteColor(texColor.rgb / texColor.a) * texColor.a;
+    }
+#endif
 
     outColor = texColor;
 }

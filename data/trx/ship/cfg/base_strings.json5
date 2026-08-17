@@ -1494,7 +1494,7 @@
         },
         "rendering.enable_dithering": {
             "title": "Dithering",
-            "description": "Reduces the picture to 8-bit color with an ordered dither pattern, for the look of the software-rendered releases.",
+            "description": "Uses each level's 8-bit texture palette and shade tables, for the look of the software-rendered releases.",
         },
         "rendering.enable_trapezoid_filter": {
             "title": "Trapezoid filter",

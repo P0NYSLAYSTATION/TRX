@@ -36,6 +36,7 @@
     X_DECLARE_MEMBER(int, reflections_enabled)                                 \
     X_DECLARE_MEMBER(int, textures_enabled)                                    \
     X_DECLARE_MEMBER(int, vertex_snap_enabled)                                 \
+    X_DECLARE_MEMBER(int, software_renderer_enabled)                           \
     X_DECLARE_MEMBER(int, tr_version)                                          \
     X_DECLARE_MEMBER(float, uv_scroll_tick)
 
@@ -155,6 +156,7 @@ void Output_Uniforms_UploadGeneral(const OUTPUT_UNIFORMS *const uniforms)
         .trapezoid_filter_enabled = g_Config.rendering.enable_trapezoid_filter,
         .reflections_enabled = g_Config.visuals.enable_reflections,
         .vertex_snap_enabled = g_Config.rendering.enable_vertex_snap,
+        .software_renderer_enabled = g_Config.rendering.enable_dithering,
         .fog_distance = {Output_GetFogStart(), Output_GetFogEnd()},
         .fog_color = {
             Output_GetFogColor().r,

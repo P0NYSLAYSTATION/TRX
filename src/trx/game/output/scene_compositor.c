@@ -48,6 +48,16 @@ static void M_BindTextures(const M_PRIV *const p)
     glBindTexture(GL_TEXTURE_2D_ARRAY, Output_Textures_GetAtlasTexture());
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, Output_Textures_GetEnvMapTexture());
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(
+        GL_TEXTURE_2D_ARRAY, Output_Textures_GetSoftwareAtlasTexture());
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, Output_Textures_GetSoftwarePaletteTexture());
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, Output_Textures_GetSoftwareLightMapTexture());
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(
+        GL_TEXTURE_3D, Output_Textures_GetSoftwarePaletteLUTTexture());
 }
 
 static void M_SetupScene(const M_PRIV *const p)

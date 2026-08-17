@@ -9,3 +9,7 @@
 
 GLuint Output_Textures_GetAtlasTexture(void);
 GLuint Output_Textures_GetEnvMapTexture(void);
+GLuint Output_Textures_GetSoftwareAtlasTexture(void);
+GLuint Output_Textures_GetSoftwareLightMapTexture(void);
+GLuint Output_Textures_GetSoftwarePaletteTexture(void);
+GLuint Output_Textures_GetSoftwarePaletteLUTTexture(void);

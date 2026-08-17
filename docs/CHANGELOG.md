@@ -21,6 +21,9 @@
 - Fixed a setting description showing a question mark in place of a key that is bound to a combination, such as Alt+Enter
 - Changed the TR3 breeze mode to read TR3/4, as it covers both games (Graphic Options → Visuals → Breeze)
 
+**Rendering**
+- Fixed the Dithering option using a fixed RGB332 pattern instead of each level's software-renderer texture palette and shade tables (Graphic Options → Rendering → Dithering)
+
 **Developer console**
 - Added the `/outfit` console command, which shows or changes what Lara is wearing
 - Added the `/golden` console command, which casts Lara in gold

@@ -26,6 +26,7 @@
 
 #define M_TRANSPARENCY_CACHE_VERSION 1
 #define M_WATERFALL_FACE_IDX 4
+#define M_SOFTWARE_PALETTE_LUT_SIZE 64
 
 typedef struct {
     OUTPUT_UVW corners[4];
@@ -39,6 +40,10 @@ static struct {
 static struct {
     GLuint tex_atlas;
     GLuint tex_env_map;
+    GLuint tex_software_atlas;
+    GLuint tex_software_light_map;
+    GLuint tex_software_palette;
+    GLuint tex_software_palette_lut;
 
     struct {
         int32_t count;
@@ -656,6 +661,93 @@ static void M_UploadAtlas(void)
     TRX_GL_CheckError();
 }
 
+static void M_UploadSoftwarePaletteLUT(void)
+{
+    const int32_t side = M_SOFTWARE_PALETTE_LUT_SIZE;
+    const size_t size = side * side * side;
+    uint8_t *const lut = Memory_Alloc(size);
+
+    for (int32_t b = 0; b < side; b++) {
+        const int32_t blue = b * 255 / (side - 1);
+        for (int32_t g = 0; g < side; g++) {
+            const int32_t green = g * 255 / (side - 1);
+            for (int32_t r = 0; r < side; r++) {
+                const int32_t red = r * 255 / (side - 1);
+                int32_t best_idx = 0;
+                int32_t best_diff = INT32_MAX;
+                for (int32_t i = 0; i < m_PaletteSize; i++) {
+                    const int32_t dr = red - m_Palette8[i].r;
+                    const int32_t dg = green - m_Palette8[i].g;
+                    const int32_t db = blue - m_Palette8[i].b;
+                    const int32_t diff = SQUARE(dr) + SQUARE(dg) + SQUARE(db);
+                    if (diff < best_diff) {
+                        best_diff = diff;
+                        best_idx = i;
+                    }
+                }
+                lut[(b * side + g) * side + r] = (uint8_t)best_idx;
+            }
+        }
+    }
+
+    glGenTextures(1, &m_Priv.tex_software_palette_lut);
+    glBindTexture(GL_TEXTURE_3D, m_Priv.tex_software_palette_lut);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage3D(
+        GL_TEXTURE_3D, 0, GL_R8UI, side, side, side, 0, GL_RED_INTEGER,
+        GL_UNSIGNED_BYTE, lut);
+    Memory_Free(lut);
+}
+
+static void M_UploadSoftwareRendererTextures(void)
+{
+    if (m_TexturePages8 == nullptr || m_Palette8 == nullptr
+        || m_PaletteSize == 0) {
+        return;
+    }
+
+    glGenTextures(1, &m_Priv.tex_software_atlas);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, m_Priv.tex_software_atlas);
+    glTexStorage3D(
+        GL_TEXTURE_2D_ARRAY, 1, GL_R8UI, TEXTURE_PAGE_WIDTH,
+        TEXTURE_PAGE_HEIGHT, m_TexturePageCount);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexSubImage3D(
+        GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, TEXTURE_PAGE_WIDTH,
+        TEXTURE_PAGE_HEIGHT, m_TexturePageCount, GL_RED_INTEGER,
+        GL_UNSIGNED_BYTE, m_TexturePages8);
+
+    glGenTextures(1, &m_Priv.tex_software_palette);
+    glBindTexture(GL_TEXTURE_2D, m_Priv.tex_software_palette);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, GL_RGB8, m_PaletteSize, 1, 0, GL_RGB,
+        GL_UNSIGNED_BYTE, m_Palette8);
+
+    glGenTextures(1, &m_Priv.tex_software_light_map);
+    glBindTexture(GL_TEXTURE_2D, m_Priv.tex_software_light_map);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, GL_R8UI, 256, 32, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE,
+        m_LightMap);
+
+    M_UploadSoftwarePaletteLUT();
+    TRX_GL_CheckError();
+}
+
 static void M_FreeLevelData(void)
 {
     // destroy per-page locks
@@ -669,6 +761,22 @@ static void M_FreeLevelData(void)
     if (m_Priv.tex_atlas != 0) {
         glDeleteTextures(1, &m_Priv.tex_atlas);
         m_Priv.tex_atlas = 0;
+    }
+    if (m_Priv.tex_software_atlas != 0) {
+        glDeleteTextures(1, &m_Priv.tex_software_atlas);
+        m_Priv.tex_software_atlas = 0;
+    }
+    if (m_Priv.tex_software_light_map != 0) {
+        glDeleteTextures(1, &m_Priv.tex_software_light_map);
+        m_Priv.tex_software_light_map = 0;
+    }
+    if (m_Priv.tex_software_palette != 0) {
+        glDeleteTextures(1, &m_Priv.tex_software_palette);
+        m_Priv.tex_software_palette = 0;
+    }
+    if (m_Priv.tex_software_palette_lut != 0) {
+        glDeleteTextures(1, &m_Priv.tex_software_palette_lut);
+        m_Priv.tex_software_palette_lut = 0;
     }
     Memory_FreePointer(&m_Priv.uvws.data);
     Memory_FreePointer(&m_Priv.uvws.animated);
@@ -730,6 +838,7 @@ void Output_Textures_ObserveLevelLoad(void)
     }
     M_PrepareAnimationRanges();
     M_UploadAtlas();
+    M_UploadSoftwareRendererTextures();
 }
 
 void Output_Textures_UpdateEnvironmentMap(void)
@@ -774,6 +883,26 @@ GLuint Output_Textures_GetAtlasTexture(void)
 GLuint Output_Textures_GetEnvMapTexture(void)
 {
     return m_Priv.tex_env_map;
+}
+
+GLuint Output_Textures_GetSoftwareAtlasTexture(void)
+{
+    return m_Priv.tex_software_atlas;
+}
+
+GLuint Output_Textures_GetSoftwareLightMapTexture(void)
+{
+    return m_Priv.tex_software_light_map;
+}
+
+GLuint Output_Textures_GetSoftwarePaletteTexture(void)
+{
+    return m_Priv.tex_software_palette;
+}
+
+GLuint Output_Textures_GetSoftwarePaletteLUTTexture(void)
+{
+    return m_Priv.tex_software_palette_lut;
 }
 
 OUTPUT_ATLAS_RECT Output_Textures_GetEnvMapRect(void)

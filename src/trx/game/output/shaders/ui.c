@@ -9,6 +9,15 @@ RESULT Output_UIShader_Create(OUTPUT_UI_SHADER **const out_shader)
     MUST(Output_Shader_Create("ui.glsl", &shader));
     TRX_GL_TRACK_UNIFORM(
         glUniform1i, Output_Shader_LookupUniform(shader, "uTexAtlas"), 0);
+    TRX_GL_TRACK_UNIFORM(
+        glUniform1i, Output_Shader_LookupUniform(shader, "uSoftwareTexAtlas"),
+        2);
+    TRX_GL_TRACK_UNIFORM(
+        glUniform1i, Output_Shader_LookupUniform(shader, "uSoftwarePalette"),
+        3);
+    TRX_GL_TRACK_UNIFORM(
+        glUniform1i, Output_Shader_LookupUniform(shader, "uSoftwarePaletteLUT"),
+        5);
     *out_shader = shader;
     return OK;
 }
