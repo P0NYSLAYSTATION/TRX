@@ -393,6 +393,11 @@ void main(void) {
     texColor *= uTint;
     texColor.rgb *= uTint.a;
 
+    if (uDitherMode == DITHER_MODE_PS1) {
+        bool dither = (gFlags & (VERT_BILLBOARD | VERT_ABS_SPRITE)) == 0u;
+        texColor = ps1QuantizePremultiplied(texColor, dither);
+    }
+
     outColor = texColor;
 }
 

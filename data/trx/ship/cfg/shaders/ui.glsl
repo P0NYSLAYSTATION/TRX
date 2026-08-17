@@ -50,6 +50,9 @@ void main(void) {
     }
 
     texColor.rgb *= uUIBrightnessMultiplier;
+    if (uDitherMode == DITHER_MODE_PS1) {
+        texColor = ps1QuantizePremultiplied(texColor, false);
+    }
     outColor = texColor;
 }
 

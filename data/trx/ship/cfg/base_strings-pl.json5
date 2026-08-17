@@ -698,6 +698,11 @@
             "CREATURE_DROWN_POLICY_NEVER": "Wyłączone",
             "CREATURE_DROWN_POLICY_SUBMERGED": "Zanurzone",
         },
+        "DITHER_MODE": {
+            "DITHER_MODE_DISABLED": "\\{review}",
+            "DITHER_MODE_PS1": "\\{review}",
+            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}",
+        },
         "GAME_MODES_POLICY": {
             "GAME_MODES_POLICY_ALWAYS": "\\{review}Zawsze",
             "GAME_MODES_POLICY_NEVER": "\\{review}Nigdy",
@@ -1492,10 +1497,11 @@
             "title": "Ramka",
             "description": "Dodaje czarną ramkę wokół okna gry.",
         },
-        "rendering.enable_dithering": {
-            "title": "\\{review}Dithering",
-            "description": "\\{review}Redukuje obraz do koloru 8-bitowego, rozpraszając go uporządkowanym wzorem, tak jak w wydaniach renderowanych programowo.",
+        "rendering.dither_mode": {
+            "title": "\\{review}",
+            "description": "\\{review}",
         },
+        "rendering.enable_dithering": {},
         "rendering.enable_trapezoid_filter": {
             "title": "Filtr trapezoidalny",
             "description": "Poprawia rysowanie czworokątów, rozciągając teksturę między wszystkimi wierzchołkami zamiast dzielić je na dwa trójkąty.",

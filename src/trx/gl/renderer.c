@@ -23,6 +23,8 @@ typedef struct {
 
     TRX_GL_FBO geometry_fbo;
     TRX_GL_FBO ui_fbo;
+    // RGB555-aware target used to compose the scene and UI in PS1 mode.
+    TRX_GL_FBO present_fbo;
     // Holds the geometry framebuffer brought down to the scene resolution.
     // Only allocated while there is something to resolve.
     TRX_GL_FBO resolve_fbo;
@@ -39,10 +41,35 @@ typedef struct {
     TRX_GL_BUFFER buffer;
     TRX_GL_SAMPLER sampler;
     TRX_GL_PROGRAM program;
-    GLint loc_dither;
+    GLint loc_dither_mode;
     GLint loc_supersample;
     GLuint composite_fbo;
 } M_CONTEXT;
+
+static GLint M_GetSceneInternalFormat(const M_CONTEXT *const p)
+{
+    return p->config->dither_mode == DITHER_MODE_PS1 ? GL_RGB5_A1 : GL_RGBA8;
+}
+
+static void M_SizeFBO(
+    TRX_GL_FBO *const fbo, const int32_t width, const int32_t height,
+    const int32_t samples, const GLint internal_format, const GLenum format,
+    const bool with_depth_stencil)
+{
+    if (fbo->fbo != 0
+        && (fbo->internal_format != internal_format || fbo->format != format
+            || fbo->with_depth_stencil != with_depth_stencil)) {
+        TRX_GL_FBO_Close(fbo);
+    }
+
+    if (fbo->fbo == 0) {
+        TRX_GL_FBO_Init(
+            fbo, width, height, samples, internal_format, format,
+            with_depth_stencil);
+    } else {
+        TRX_GL_FBO_ResizeIfNeeded(fbo, width, height, samples);
+    }
+}
 
 static void M_Blit(const M_CONTEXT *const p, const TRX_GL_FBO *const fbo)
 {
@@ -77,8 +104,9 @@ static void M_SizeGeometryFbo(M_CONTEXT *const p)
 {
     const VIEWPORT_RECT game = Viewport_GetRect(VIEWPORT_GAME);
     const VIEWPORT_RECT scene = Viewport_GetRect(VIEWPORT_SCENE);
-    TRX_GL_FBO_ResizeIfNeeded(
-        &p->geometry_fbo, game.width, game.height, M_GetGeometrySamples(p));
+    M_SizeFBO(
+        &p->geometry_fbo, game.width, game.height, M_GetGeometrySamples(p),
+        M_GetSceneInternalFormat(p), GL_RGBA, true);
     p->scene_width = scene.width;
     p->scene_height = scene.height;
 }
@@ -104,12 +132,9 @@ static const TRX_GL_FBO *M_ResolveScene(M_CONTEXT *const p)
         return &p->resolve_fbo;
     }
 
-    if (p->resolve_fbo.fbo == 0) {
-        TRX_GL_FBO_Init(
-            &p->resolve_fbo, width, height, 1, GL_RGBA8, GL_RGBA, false);
-    } else {
-        TRX_GL_FBO_ResizeIfNeeded(&p->resolve_fbo, width, height, 1);
-    }
+    M_SizeFBO(
+        &p->resolve_fbo, width, height, 1, M_GetSceneInternalFormat(p), GL_RGBA,
+        false);
 
     if (p->geometry_fbo.samples > 1) {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, p->geometry_fbo.fbo);
@@ -123,7 +148,8 @@ static const TRX_GL_FBO *M_ResolveScene(M_CONTEXT *const p)
         TRX_GL_FBO_Bind(&p->resolve_fbo);
         glViewport(0, 0, width, height);
         TRX_GL_Program_Uniform1i(&p->program, p->loc_supersample, factor);
-        TRX_GL_Program_Uniform1i(&p->program, p->loc_dither, false);
+        TRX_GL_Program_Uniform1i(
+            &p->program, p->loc_dither_mode, DITHER_MODE_DISABLED);
         M_Blit(p, &p->geometry_fbo);
         TRX_GL_Program_Uniform1i(&p->program, p->loc_supersample, 1);
     }
@@ -145,7 +171,8 @@ static void M_UpdateFBOSizes(TRX_GL_RENDERER *renderer)
 // scene binds framebuffers of its own, so the destination is bound here rather
 // than by the caller.
 static void M_Composite(
-    M_CONTEXT *const p, const GLuint dst_fbo, const VIEWPORT_RECT rect)
+    M_CONTEXT *const p, const GLuint dst_fbo, const VIEWPORT_RECT rect,
+    const DITHER_MODE dither_mode)
 {
     const GLuint filter = p->config->display_filter == TEXTURE_FILTER_BILINEAR
         ? GL_LINEAR
@@ -159,8 +186,7 @@ static void M_Composite(
     TRX_GL_Sampler_Parameteri(&p->sampler, GL_TEXTURE_MAG_FILTER, filter);
     TRX_GL_Sampler_Parameteri(&p->sampler, GL_TEXTURE_MIN_FILTER, filter);
 
-    TRX_GL_Program_Uniform1i(
-        &p->program, p->loc_dither, p->config->enable_dithering);
+    TRX_GL_Program_Uniform1i(&p->program, p->loc_dither_mode, dither_mode);
 
     glViewport(rect.x, rect.y, rect.width, rect.height);
     TRX_GL_CheckError();
@@ -181,7 +207,29 @@ static void M_Render(TRX_GL_RENDERER *renderer)
     M_CONTEXT *const p = renderer->priv;
     ASSERT(p != nullptr);
 
-    M_Composite(p, 0, Viewport_GetRect(VIEWPORT_TARGET));
+    const VIEWPORT_RECT target = Viewport_GetRect(VIEWPORT_TARGET);
+    if (p->config->dither_mode == DITHER_MODE_PS1) {
+        M_SizeFBO(
+            &p->present_fbo, target.width, target.height, 1, GL_RGB5_A1,
+            GL_RGBA, false);
+        M_Composite(
+            p, p->present_fbo.fbo,
+            (VIEWPORT_RECT) { .width = target.width, .height = target.height },
+            DITHER_MODE_PS1);
+
+        M_BindQuadState(p);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        TRX_GL_Sampler_Parameteri(
+            &p->sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        TRX_GL_Sampler_Parameteri(
+            &p->sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        TRX_GL_Program_Uniform1i(
+            &p->program, p->loc_dither_mode, DITHER_MODE_DISABLED);
+        glViewport(target.x, target.y, target.width, target.height);
+        M_Blit(p, &p->present_fbo);
+    } else {
+        M_Composite(p, 0, target, p->config->dither_mode);
+    }
 
     if (TRX_GL_Context_GetScheduledScreenshotPath() != nullptr) {
         TRX_GL_Context_SwitchToViewport(VIEWPORT_TARGET);
@@ -251,7 +299,8 @@ static RESULT M_Init(
     TRX_GL_Program_Bind(&p->program);
     TRX_GL_Program_Uniform1i(
         &p->program, TRX_GL_Program_UniformLocation(&p->program, "uTex0"), 0);
-    p->loc_dither = TRX_GL_Program_UniformLocation(&p->program, "uDither");
+    p->loc_dither_mode =
+        TRX_GL_Program_UniformLocation(&p->program, "uDitherMode");
     p->loc_supersample =
         TRX_GL_Program_UniformLocation(&p->program, "uSupersample");
     TRX_GL_Program_Uniform1i(&p->program, p->loc_supersample, 1);
@@ -260,7 +309,7 @@ static RESULT M_Init(
     rect = Viewport_GetRect(VIEWPORT_GAME);
     TRX_GL_FBO_Init(
         &p->geometry_fbo, rect.width, rect.height, M_GetGeometrySamples(p),
-        GL_RGBA8, GL_RGBA, true);
+        M_GetSceneInternalFormat(p), GL_RGBA, true);
     p->scene_width = Viewport_GetWidth(VIEWPORT_SCENE);
     p->scene_height = Viewport_GetHeight(VIEWPORT_SCENE);
 
@@ -281,6 +330,7 @@ static void M_Shutdown(TRX_GL_RENDERER *renderer)
     TRX_GL_FBO_Close(&p->geometry_fbo);
     TRX_GL_FBO_Close(&p->ui_fbo);
     TRX_GL_FBO_Close(&p->resolve_fbo);
+    TRX_GL_FBO_Close(&p->present_fbo);
     if (p->composite_fbo != 0) {
         glDeleteFramebuffers(1, &p->composite_fbo);
         p->composite_fbo = 0;
@@ -340,9 +390,25 @@ void TRX_GL_Renderer_CompositeToTexture(
     glFramebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->id, 0);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
-        M_Composite(
-            p, p->composite_fbo,
-            (VIEWPORT_RECT) { .width = width, .height = height });
+        const VIEWPORT_RECT rect = { .width = width, .height = height };
+        if (p->config->dither_mode == DITHER_MODE_PS1) {
+            M_SizeFBO(
+                &p->present_fbo, width, height, 1, GL_RGB5_A1, GL_RGBA, false);
+            M_Composite(p, p->present_fbo.fbo, rect, DITHER_MODE_PS1);
+
+            M_BindQuadState(p);
+            glBindFramebuffer(GL_FRAMEBUFFER, p->composite_fbo);
+            TRX_GL_Sampler_Parameteri(
+                &p->sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            TRX_GL_Sampler_Parameteri(
+                &p->sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            TRX_GL_Program_Uniform1i(
+                &p->program, p->loc_dither_mode, DITHER_MODE_DISABLED);
+            glViewport(0, 0, width, height);
+            M_Blit(p, &p->present_fbo);
+        } else {
+            M_Composite(p, p->composite_fbo, rect, p->config->dither_mode);
+        }
     } else {
         LOG_ERROR("cannot draw into the given texture");
     }

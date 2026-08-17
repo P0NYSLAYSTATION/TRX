@@ -7,6 +7,9 @@
 - Fixed Lara being able to vault or crawl through breakable walls that stand on the edge of a tile (Gameplay → Fixes → Fix breakable wall clipping) (OG bug)
 - Fixed Lara's rope-grab reach being shorter from certain directions (OG bug)
 
+**Rendering**
+- Added PlayStation RGB555 dithering and changed Dithering to offer Disabled, Software Renderer and PS1 (Graphic Options → Rendering → Dithering)
+
 **UI**
 - Changed the Fix one-shot music triggers option to sit with the other music settings (Sound → Misc)
 - Changed Lara's outfit setting to offer only the outfits the current level can dress her in

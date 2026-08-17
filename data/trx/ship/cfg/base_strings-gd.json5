@@ -698,6 +698,11 @@
             "CREATURE_DROWN_POLICY_NEVER": "A-riamh",
             "CREATURE_DROWN_POLICY_SUBMERGED": "Fo uisge",
         },
+        "DITHER_MODE": {
+            "DITHER_MODE_DISABLED": "\\{review}",
+            "DITHER_MODE_PS1": "\\{review}",
+            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}",
+        },
         "GAME_MODES_POLICY": {
             "GAME_MODES_POLICY_ALWAYS": "An-còmhnaidh",
             "GAME_MODES_POLICY_NEVER": "A-riamh",
@@ -1492,10 +1497,11 @@
             "title": "Iomallan",
             "description": "Cuiridh seo iomallan dubha timcheall air uinneag a' gheama.",
         },
-        "rendering.enable_dithering": {
-            "title": "Dithering",
-            "description": "Lùghdaichidh seo an dealbh gu dathan 8-biod le pàtran dithering òrdaichte, airson coltas nan tionndaidhean le reandaradh bathar-bog.",
+        "rendering.dither_mode": {
+            "title": "\\{review}",
+            "description": "\\{review}",
         },
+        "rendering.enable_dithering": {},
         "rendering.enable_trapezoid_filter": {
             "title": "Criathradh trapeasoid",
             "description": "Cuiridh seo ceartachadh air trapeasoidean (ceàrnan neo-chothromach) airson reandaradh nas fhearr.",
