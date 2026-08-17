@@ -35,6 +35,8 @@ layout(std140) uniform Globals {
     vec4 uFogColor;
     vec2 uFogDistance; // x = fog start, y = fog end
     vec2 uViewportSize;
+    vec2 uSceneSize;
+    vec2 uUISize;
     float uTime;
     float uTimeInGame;
     float uBrightnessMultiplier;
@@ -73,33 +75,35 @@ const int PS1_DITHER_MATRIX[16] = int[16](
     -3,  1, -4,  0,
      3, -1,  2, -2);
 
-ivec2 getPS1Pixel(void)
+ivec2 getPS1Pixel(vec2 rasterSize)
 {
-    vec2 viewport = max(uViewportSize, vec2(1.0));
-    ivec2 pos = ivec2(floor(gl_FragCoord.xy * vec2(320.0, 240.0) / viewport));
-    pos = clamp(pos, ivec2(0), ivec2(319, 239));
-    pos.y = 239 - pos.y;
+    ivec2 sceneSize = max(ivec2(uSceneSize), ivec2(1));
+    vec2 raster = max(rasterSize, vec2(1.0));
+    ivec2 pos = ivec2(floor(gl_FragCoord.xy * uSceneSize / raster));
+    pos = clamp(pos, ivec2(0), sceneSize - 1);
+    pos.y = sceneSize.y - 1 - pos.y;
     return pos;
 }
 
-vec3 ps1Quantize(vec3 color, bool dither)
+vec3 ps1Quantize(vec3 color, bool dither, vec2 rasterSize)
 {
     float offset = 0.0;
     if (dither) {
-        ivec2 pos = getPS1Pixel() & 3;
+        ivec2 pos = getPS1Pixel(rasterSize) & 3;
         offset = float(PS1_DITHER_MATRIX[pos.y * 4 + pos.x]);
     }
     vec3 channel = clamp(color * 255.0 + offset, 0.0, 255.0);
     return floor(channel / 8.0) / 31.0;
 }
 
-vec4 ps1QuantizePremultiplied(vec4 color, bool dither)
+vec4 ps1QuantizePremultiplied(
+    vec4 color, bool dither, vec2 rasterSize)
 {
     if (color.a <= 0.0) {
         return color;
     }
-    color.rgb = ps1Quantize(clamp(color.rgb / color.a, 0.0, 1.0), dither)
-        * color.a;
+    color.rgb = ps1Quantize(
+        clamp(color.rgb / color.a, 0.0, 1.0), dither, rasterSize) * color.a;
     return color;
 }
 

@@ -22,6 +22,8 @@
     X_DECLARE_MEMBER(float, fog_color, [4])                                    \
     X_DECLARE_MEMBER(float, fog_distance, [2])                                 \
     X_DECLARE_MEMBER(float, viewport_size, [2])                                \
+    X_DECLARE_MEMBER(float, scene_size, [2])                                   \
+    X_DECLARE_MEMBER(float, ui_size, [2])                                      \
     X_DECLARE_MEMBER(float, time)                                              \
     X_DECLARE_MEMBER(float, time_in_game)                                      \
     X_DECLARE_MEMBER(float, brightness_multiplier)                             \
@@ -148,6 +150,14 @@ void Output_Uniforms_UploadGeneral(const OUTPUT_UNIFORMS *const uniforms)
         .viewport_size = {
             (float)Viewport_GetWidth(VIEWPORT_GAME),
             (float)Viewport_GetHeight(VIEWPORT_GAME),
+        },
+        .scene_size = {
+            (float)Viewport_GetWidth(VIEWPORT_SCENE),
+            (float)Viewport_GetHeight(VIEWPORT_SCENE),
+        },
+        .ui_size = {
+            (float)Viewport_GetWidth(VIEWPORT_UI),
+            (float)Viewport_GetHeight(VIEWPORT_UI),
         },
         .min_shade = M_GetMinShade(),
         .billboard_lock_mode = g_Config.rendering.sprite_lock_mode,

@@ -395,7 +395,8 @@ void main(void) {
 
     if (uDitherMode == DITHER_MODE_PS1) {
         bool dither = (gFlags & (VERT_BILLBOARD | VERT_ABS_SPRITE)) == 0u;
-        texColor = ps1QuantizePremultiplied(texColor, dither);
+        texColor =
+            ps1QuantizePremultiplied(texColor, dither, uViewportSize);
     }
 
     outColor = texColor;
