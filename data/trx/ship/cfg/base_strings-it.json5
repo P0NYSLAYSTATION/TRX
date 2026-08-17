@@ -699,9 +699,9 @@
             "CREATURE_DROWN_POLICY_SUBMERGED": "Sommerso",
         },
         "DITHER_MODE": {
-            "DITHER_MODE_DISABLED": "\\{review}",
-            "DITHER_MODE_PS1": "\\{review}",
-            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}",
+            "DITHER_MODE_DISABLED": "\\{review}Disattivato",
+            "DITHER_MODE_PS1": "\\{review}PS1",
+            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}Renderer software",
         },
         "GAME_MODES_POLICY": {
             "GAME_MODES_POLICY_ALWAYS": "Sempre",
@@ -1498,10 +1498,9 @@
             "description": "Aggiunge dei bordi neri attorno alla finestra del gioco.",
         },
         "rendering.dither_mode": {
-            "title": "\\{review}",
-            "description": "\\{review}",
+            "title": "Retinatura",
+            "description": "\\{review}Seleziona l'ombreggiatura della tavolozza del renderer software originale per PC o il dithering RGB555 di PlayStation.",
         },
-        "rendering.enable_dithering": {},
         "rendering.enable_trapezoid_filter": {
             "title": "Filtro trapezoidale",
             "description": "Corregge la renderizzazione dei quadrilateri.",

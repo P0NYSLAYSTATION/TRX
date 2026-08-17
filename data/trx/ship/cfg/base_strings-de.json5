@@ -699,9 +699,9 @@
             "CREATURE_DROWN_POLICY_SUBMERGED": "\\{review}Untergetaucht",
         },
         "DITHER_MODE": {
-            "DITHER_MODE_DISABLED": "\\{review}",
-            "DITHER_MODE_PS1": "\\{review}",
-            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}",
+            "DITHER_MODE_DISABLED": "\\{review}Deaktiviert",
+            "DITHER_MODE_PS1": "\\{review}PS1",
+            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}Software-Renderer",
         },
         "GAME_MODES_POLICY": {
             "GAME_MODES_POLICY_ALWAYS": "\\{review}Immer",
@@ -1498,10 +1498,9 @@
             "description": "Fügt schwarze Rahmen um das Spiel-Fenster herum hinzu.",
         },
         "rendering.dither_mode": {
-            "title": "\\{review}",
-            "description": "\\{review}",
+            "title": "\\{review}Dithering",
+            "description": "\\{review}Wählt die Paletten-Schattierung des ursprünglichen PC-Software-Renderers oder PlayStation-RGB555-Dithering aus.",
         },
-        "rendering.enable_dithering": {},
         "rendering.enable_trapezoid_filter": {
             "title": "Trapezoid-Filter",
             "description": "Korrigiert das Rendern von Vierecken.",

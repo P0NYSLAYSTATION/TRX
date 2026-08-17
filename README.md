@@ -108,6 +108,10 @@ Please refer to [this document](docs/CHANGELOG.md).
     getting new rendering improvements and texture fixes. But great stuff
     takes time.
 
+    The Dithering setting can reproduce either the original PC software
+    renderer's palette shading or the PlayStation releases' RGB555 color depth
+    and ordered dither pattern.
+
 3. **Can I play this on Mac, Linux, Android...?**
 
     Currently supported platforms include Windows, Linux and macOS.

@@ -699,9 +699,9 @@
             "CREATURE_DROWN_POLICY_SUBMERGED": "\\{review}Погружены",
         },
         "DITHER_MODE": {
-            "DITHER_MODE_DISABLED": "\\{review}",
-            "DITHER_MODE_PS1": "\\{review}",
-            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}",
+            "DITHER_MODE_DISABLED": "\\{review}Отключено",
+            "DITHER_MODE_PS1": "\\{review}PS1",
+            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}Программный рендерер",
         },
         "GAME_MODES_POLICY": {
             "GAME_MODES_POLICY_ALWAYS": "\\{review}Всегда",
@@ -1498,10 +1498,9 @@
             "description": "Добавляет черные рамки вокруг игрового окна.",
         },
         "rendering.dither_mode": {
-            "title": "\\{review}",
-            "description": "\\{review}",
+            "title": "\\{review}Дизеринг",
+            "description": "\\{review}Выбирает палитровое затенение оригинального программного рендерера PC или RGB555-дизеринг PlayStation.",
         },
-        "rendering.enable_dithering": {},
         "rendering.enable_trapezoid_filter": {
             "title": "Четырёхугольная интерполяция",
             "description": "Исправляет отображение четырёхугольников.",

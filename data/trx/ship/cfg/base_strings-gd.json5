@@ -699,9 +699,9 @@
             "CREATURE_DROWN_POLICY_SUBMERGED": "Fo uisge",
         },
         "DITHER_MODE": {
-            "DITHER_MODE_DISABLED": "\\{review}",
-            "DITHER_MODE_PS1": "\\{review}",
-            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}",
+            "DITHER_MODE_DISABLED": "\\{review}Dheth",
+            "DITHER_MODE_PS1": "\\{review}PS1",
+            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}Reandaradh bathar-bog",
         },
         "GAME_MODES_POLICY": {
             "GAME_MODES_POLICY_ALWAYS": "An-còmhnaidh",
@@ -1498,10 +1498,9 @@
             "description": "Cuiridh seo iomallan dubha timcheall air uinneag a' gheama.",
         },
         "rendering.dither_mode": {
-            "title": "\\{review}",
-            "description": "\\{review}",
+            "title": "Dithering",
+            "description": "\\{review}Taghaidh seo dubharadh paileid an reandarair bathar-bog PC tùsail no dithering RGB555 PlayStation.",
         },
-        "rendering.enable_dithering": {},
         "rendering.enable_trapezoid_filter": {
             "title": "Criathradh trapeasoid",
             "description": "Cuiridh seo ceartachadh air trapeasoidean (ceàrnan neo-chothromach) airson reandaradh nas fhearr.",

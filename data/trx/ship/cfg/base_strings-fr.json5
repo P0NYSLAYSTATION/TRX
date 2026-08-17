@@ -699,9 +699,9 @@
             "CREATURE_DROWN_POLICY_SUBMERGED": "\\{review}Submergé",
         },
         "DITHER_MODE": {
-            "DITHER_MODE_DISABLED": "\\{review}",
-            "DITHER_MODE_PS1": "\\{review}",
-            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}",
+            "DITHER_MODE_DISABLED": "\\{review}Désactivé",
+            "DITHER_MODE_PS1": "\\{review}PS1",
+            "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}Rendu logiciel",
         },
         "GAME_MODES_POLICY": {
             "GAME_MODES_POLICY_ALWAYS": "\\{review}Toujours ",
@@ -1498,10 +1498,9 @@
             "description": "\\{review}Ajoute des bordures noires autour de la fenêtre du jeu.",
         },
         "rendering.dither_mode": {
-            "title": "\\{review}",
-            "description": "\\{review}",
+            "title": "\\{review}Tramage",
+            "description": "\\{review}Sélectionne l'ombrage de palette du moteur de rendu logiciel PC original ou le tramage RGB555 de la PlayStation.",
         },
-        "rendering.enable_dithering": {},
         "rendering.enable_trapezoid_filter": {
             "title": "Filtre trapézoïdal",
             "description": "Corrige le rendu des quadrilatères.",
