@@ -82,6 +82,33 @@ TEST(the_old_dithering_choice_is_carried_to_the_software_renderer_mode)
     CHECK_EQ_INT(g_Config.rendering.dither_mode, DITHER_MODE_PS1);
 }
 
+TEST(vertex_snap_booleans_migrate_to_the_fixed_resolution)
+{
+    g_ConfigStorage.rendering.vertex_snap_mode = VERTEX_SNAP_MODE_DISABLED;
+    M_Load("{\"enable_vertex_snap\":true}");
+    CHECK_EQ_INT(g_Config.rendering.vertex_snap_mode, VERTEX_SNAP_MODE_320X240);
+}
+
+TEST(vertex_snap_at_upscale_migrates_to_the_upscale_resolution)
+{
+    g_ConfigStorage.rendering.vertex_snap_mode = VERTEX_SNAP_MODE_DISABLED;
+    M_Load(
+        "{\"enable_vertex_snap\":true,"
+        "\"enable_vertex_snap_at_upscale\":true}");
+    CHECK_EQ_INT(
+        g_Config.rendering.vertex_snap_mode, VERTEX_SNAP_MODE_UPSCALE_RES);
+}
+
+TEST(a_disabled_vertex_snap_stays_disabled_during_migration)
+{
+    g_ConfigStorage.rendering.vertex_snap_mode = VERTEX_SNAP_MODE_320X240;
+    M_Load(
+        "{\"enable_vertex_snap\":false,"
+        "\"enable_vertex_snap_at_upscale\":true}");
+    CHECK_EQ_INT(
+        g_Config.rendering.vertex_snap_mode, VERTEX_SNAP_MODE_DISABLED);
+}
+
 TEST(a_file_the_migrations_have_nothing_to_say_about_is_left_alone)
 {
     g_ConfigStorage.visuals.breeze_mode = BREEZE_MODE_TR2;
@@ -112,6 +139,8 @@ TEST(a_key_a_migration_reads_is_one_the_writer_drops)
     CHECK(ConfigLegacy_IsKey("enable_save_crystals"));
     CHECK(ConfigLegacy_IsKey("enable_game_modes"));
     CHECK(ConfigLegacy_IsKey("enable_dithering"));
+    CHECK(ConfigLegacy_IsKey("enable_vertex_snap"));
+    CHECK(ConfigLegacy_IsKey("enable_vertex_snap_at_upscale"));
 }
 
 TEST(an_option_a_game_still_writes_is_not_a_legacy_key)

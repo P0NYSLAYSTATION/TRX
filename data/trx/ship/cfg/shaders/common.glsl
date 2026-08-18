@@ -37,6 +37,7 @@ layout(std140) uniform Globals {
     vec2 uViewportSize;
     vec2 uSceneSize;
     vec2 uUISize;
+    vec2 uVertexSnapResolution;
     float uTime;
     float uTimeInGame;
     float uBrightnessMultiplier;
