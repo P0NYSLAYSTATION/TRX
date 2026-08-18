@@ -12,6 +12,7 @@ static __attribute__((constructor)) void M_Init(void)
     ENUM_MAP(DITHER_MODE, DITHER_MODE_DISABLED, "disabled");
     ENUM_MAP(DITHER_MODE, DITHER_MODE_SOFTWARE_RENDERER, "software-renderer");
     ENUM_MAP(DITHER_MODE, DITHER_MODE_PS1, "ps1");
+    ENUM_MAP(DITHER_MODE, DITHER_MODE_PS1_POST_PROCESS, "ps1-post-process");
 
     ENUM_MAP(INPUT_BACKEND, INPUT_BACKEND_KEYBOARD, "keyboard");
     ENUM_MAP(INPUT_BACKEND, INPUT_BACKEND_CONTROLLER, "controller");

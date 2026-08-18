@@ -30,6 +30,7 @@
 #define DITHER_MODE_DISABLED          0
 #define DITHER_MODE_SOFTWARE_RENDERER 1
 #define DITHER_MODE_PS1               2
+#define DITHER_MODE_PS1_POST_PROCESS  3
 
 layout(std140) uniform Globals {
     vec4 uFogColor;

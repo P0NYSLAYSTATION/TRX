@@ -701,6 +701,7 @@
         "DITHER_MODE": {
             "DITHER_MODE_DISABLED": "Disabled",
             "DITHER_MODE_PS1": "PS1",
+            "DITHER_MODE_PS1_POST_PROCESS": "PS1 (Post-process)",
             "DITHER_MODE_SOFTWARE_RENDERER": "Software Renderer",
         },
         "GAME_MODES_POLICY": {

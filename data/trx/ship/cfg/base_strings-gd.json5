@@ -701,6 +701,7 @@
         "DITHER_MODE": {
             "DITHER_MODE_DISABLED": "\\{review}Dheth",
             "DITHER_MODE_PS1": "\\{review}PS1",
+            "DITHER_MODE_PS1_POST_PROCESS": "\\{review}PS1 (Post-process)",
             "DITHER_MODE_SOFTWARE_RENDERER": "\\{review}Reandaradh bathar-bog",
         },
         "GAME_MODES_POLICY": {
